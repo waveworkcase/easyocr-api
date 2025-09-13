@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <title>OCR Bill</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div class="w-full max-w-2xl bg-white shadow-lg rounded-lg p-6">
+    <h2 class="text-2xl font-bold text-center mb-6 text-gray-800">
+      📄 OCR Bill Result
+    </h2>
+
+    <!-- หัวบิล -->
+    <div id="bill-header" class="text-center text-lg font-semibold text-gray-700 mb-4">
+      ใบแจ้งหนี้ / ใบเสร็จรับเงิน
+    </div>
+
+    <!-- ตาราง -->
+    <div class="overflow-x-auto">
+      <table class="min-w-full border border-gray-300">
+        <thead class="bg-gray-200">
+          <tr>
+            <th class="border border-gray-300 px-4 py-2 text-left">รายการ</th>
+            <th class="border border-gray-300 px-4 py-2 text-center">จำนวน</th>
+            <th class="border border-gray-300 px-4 py-2 text-right">ราคา</th>
+          </tr>
+        </thead>
+        <tbody id="bill-body" class="divide-y divide-gray-200">
+          <!-- Data จะถูกใส่ด้วย JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- รวมยอด -->
+    <div id="bill-total" class="text-right mt-6 text-xl font-bold text-gray-800">
+      รวม: 0 บาท
+    </div>
+  </div>
+
+  <script>
+    async function loadBill() {
+      // 📌 เปลี่ยน path นี้เป็น endpoint จริง เช่น /texts/20250913_142300.json
+      const response = await fetch("texts/ocr_result.json");
+      const data = await response.json();
+
+      // สมมติ data = [ "ใบแจ้งหนี้...", "รายการ", "จำนวน", "ราคา", "ข้าวสาร", "2", "200", "น้ำปลา", "2", "40" ]
+      let tbody = document.getElementById("bill-body");
+      let total = 0;
+
+      // ข้าม header 4 ตัวแรก แล้ว loop ทีละ 3 ช่อง (ชื่อ, จำนวน, ราคา)
+      for (let i = 4; i < data.length; i += 3) {
+        let name = data[i] || "";
+        let qty = data[i+1] || "";
+        let price = data[i+2] || "";
+
+        // แปลงจำนวนเงิน
+        let numPrice = parseFloat(price) || 0;
+        total += numPrice;
+
+        tbody.innerHTML += `
+          <tr>
+            <td class="border border-gray-300 px-4 py-2">${name}</td>
+            <td class="border border-gray-300 px-4 py-2 text-center">${qty}</td>
+            <td class="border border-gray-300 px-4 py-2 text-right">${price}</td>
+          </tr>
+        `;
+      }
+
+      document.getElementById("bill-total").innerText = `รวม: ${total} บาท`;
+    }
+
+    loadBill();
+  </script>
+</body>
+</html>
